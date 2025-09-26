@@ -12,6 +12,31 @@ public class Dados {
 		this.robot = robot;
 	}
 	
+	public RobotLegoEV3 getRobo()
+	{
+		return robot;
+	}
+	
+	public String getRoboName()
+	{
+		return robotName;
+	}
+	
+	public int getDistancia()
+	{
+		return distancia;
+	}
+	
+	public int getAngulo()
+	{
+		return angulo;
+	}
+	
+	public int getRaio()
+	{
+		return raio;
+	}
+	
 	public void setRaio(int raio)
 	{
 		this.raio = raio;
@@ -57,8 +82,17 @@ public class Dados {
 		robot.Parar(true);
 	}
 	
-	public void ligar()
+	public void ligar() throws Exception
 	{
+		if(robotName == null || robotName.isEmpty())
+		{
+			throw new Exception("Nome do robô invalido");
+		}
 		robot.OpenEV3(robotName);
+	}
+	
+	public void desligar()
+	{
+		robot.CloseEV3();
 	}
 }

@@ -30,7 +30,11 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class GUIRobot extends JFrame {
-    private JTextField txtRaio, txtAngulo, txtDistancia, txtRobot;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private JTextField txtRaio, txtAngulo, txtDistancia, txtRobot;
     private JCheckBox chkLigar;
     private JButton btnFrente, btnEsquerda, btnDireita, btnTras, btnParar;
     private JSpinner spnNumero;
@@ -89,7 +93,7 @@ public class GUIRobot extends JFrame {
 
         add(panelTop, BorderLayout.NORTH);
 
-        // Painel central (botões)
+        // Painel central
         JPanel panelCenter = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -130,7 +134,7 @@ public class GUIRobot extends JFrame {
 
         add(panelCenter, BorderLayout.CENTER);
 
-        // Painel de baixo (opções + consola)
+        // Painel de baixo 
         JPanel panelBottom = new JPanel(new BorderLayout(10, 10));
         panelBottom.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -161,10 +165,22 @@ public class GUIRobot extends JFrame {
     }
 
     private void configurarEventos() {
+    	
+    	chkLigar.addActionListener(e ->
+    	{
+    		if(chkLigar.isSelected())
+    		{
+    			dados.setRobotName(txtRobot.getText());
+    			dados.getRobo().OpenEV3(dados.getRoboName());
+    		}
+    		else
+    			dados.getRobo().CloseEV3();
+    	});
+    	
         btnFrente.addActionListener(e -> {
             try {
                 dados.setDistancia(Integer.parseInt(txtDistancia.getText()));
-                dados.moverFrente();
+                dados.getRobo().Reta(dados.getDistancia());
                 txtConsola.append("Movimento: Frente (" + txtDistancia.getText() + ")\n");
             } catch (NumberFormatException ex) {
                 txtConsola.append("Erro: distância inválida\n");
@@ -175,7 +191,7 @@ public class GUIRobot extends JFrame {
             try {
                 dados.setRaio(Integer.parseInt(txtRaio.getText()));
                 dados.setAngulo(Integer.parseInt(txtAngulo.getText()));
-                dados.virarEsquerda();
+                dados.getRobo().CurvarEsquerda(dados.getRaio(), dados.getAngulo());
                 txtConsola.append("Movimento: Esquerda (raio=" + txtRaio.getText() + ", ângulo=" + txtAngulo.getText() + ")\n");
             } catch (NumberFormatException ex) {
                 txtConsola.append("Erro: raio/ângulo inválidos\n");
@@ -186,7 +202,7 @@ public class GUIRobot extends JFrame {
             try {
                 dados.setRaio(Integer.parseInt(txtRaio.getText()));
                 dados.setAngulo(Integer.parseInt(txtAngulo.getText()));
-                dados.virarDireita();
+                dados.getRobo().CurvarDireita(dados.getRaio(), dados.getDistancia());
                 txtConsola.append("Movimento: Direita (raio=" + txtRaio.getText() + ", ângulo=" + txtAngulo.getText() + ")\n");
             } catch (NumberFormatException ex) {
                 txtConsola.append("Erro: raio/ângulo inválidos\n");
@@ -196,15 +212,15 @@ public class GUIRobot extends JFrame {
         btnTras.addActionListener(e -> {
             try {
                 dados.setDistancia(Integer.parseInt(txtDistancia.getText()));
-                dados.moverTras();
-                txtConsola.append("Movimento: Trás (" + txtDistancia.getText() + ")\n");
+                dados.getRobo().Reta(-dados.getDistancia());
+                txtConsola.append("Movimento: Marcha atrás (" + txtDistancia.getText() + ")\n");
             } catch (NumberFormatException ex) {
                 txtConsola.append("Erro: distância inválida\n");
             }
         });
 
         btnParar.addActionListener(e -> {
-            dados.parar();
+            dados.getRobo().Parar(true);
             txtConsola.append("Movimento: Parar\n");
         });
     }
