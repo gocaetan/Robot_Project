@@ -4,7 +4,7 @@ public class Dados {
 	private int angulo;
 	private int distancia;
 	private String robotName;
-	
+	private int RandomMoves;
 	private RobotLegoEV3 robot;
 	
 	public Dados(RobotLegoEV3 robot)
@@ -57,42 +57,13 @@ public class Dados {
 		this.robotName = robotName;
 	}
 	
-	public void moverFrente()
+	public int getRandomMoves()
 	{
-		robot.Reta(distancia);
+		return RandomMoves;
 	}
 	
-	public void virarEsquerda()
+	public void setRandomMoves(int RandomMoves)
 	{
-		robot.CurvarEsquerda(raio, angulo);
-	}
-	
-	public void virarDireita()
-	{
-		robot.CurvarDireita(raio, angulo);
-	}
-	
-	public void moverTras()
-	{
-		robot.Reta(-distancia);
-	}
-	
-	public void parar()
-	{
-		robot.Parar(true);
-	}
-	
-	public void ligar() throws Exception
-	{
-		if(robotName == null || robotName.isEmpty())
-		{
-			throw new Exception("Nome do robô invalido");
-		}
-		robot.OpenEV3(robotName);
-	}
-	
-	public void desligar()
-	{
-		robot.CloseEV3();
+		this.RandomMoves = RandomMoves;
 	}
 }

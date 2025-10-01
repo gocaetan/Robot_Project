@@ -165,16 +165,24 @@ public class GUIRobot extends JFrame {
     }
 
     private void configurarEventos() {
-    	
-    	chkLigar.addActionListener(e ->
-    	{
-    		if(chkLigar.isSelected())
-    		{
-    			dados.setRobotName(txtRobot.getText());
-    			dados.getRobo().OpenEV3(dados.getRoboName());
-    		}
-    		else
-    			dados.getRobo().CloseEV3();
+    	myInit();
+    	chkLigar.addActionListener(e -> {
+    	    try {
+    	        if (chkLigar.isSelected()) {
+    	            dados.setRobotName(txtRobot.getText());
+    	            dados.getRobo().OpenEV3(dados.getRoboName());
+    	        } else {
+    	            dados.getRobo().CloseEV3();
+    	        }
+    	    } catch (Exception ex) {
+    	        JOptionPane.showMessageDialog(
+    	            null,
+    	            "Erro ao ligar/desligar o robô: " + ex.getMessage(),
+    	            "Erro",
+    	            JOptionPane.ERROR_MESSAGE
+    	        );
+    	        chkLigar.setSelected(false);
+    	    }
     	});
     	
         btnFrente.addActionListener(e -> {
@@ -218,7 +226,12 @@ public class GUIRobot extends JFrame {
                 txtConsola.append("Erro: distância inválida\n");
             }
         });
-
+        
+        spnNumero.addChangeListener(e -> {
+        	int valor = (int) spnNumero.getValue();
+        	dados.setRandomMoves(valor);
+        });
+        
         btnParar.addActionListener(e -> {
             dados.getRobo().Parar(true);
             txtConsola.append("Movimento: Parar\n");
@@ -232,6 +245,7 @@ public class GUIRobot extends JFrame {
         });
     }
 }
+
 
 
 
