@@ -1,12 +1,15 @@
 
 import java.util.Random;
-enum Estado{
-	Pause, Run, Fim
-}
-public class Movimentos_Aleatorios{
+public class Movimentos_Aleatorios implements Runnable{
 	private Dados dados;
 	private Random random;
 	private Estado estado;
+	public enum Estado
+	{
+		Pause,
+		Run, 
+		Fim;
+	}
 	private boolean acaba;
 	public Movimentos_Aleatorios(Dados dados)
 	{
@@ -24,16 +27,26 @@ public class Movimentos_Aleatorios{
 		switch(estado)
 		{
 			case Run:
+				System.out.println("RUN");
 				Executar(dados.getRandomMoves());
+				break;
 			case Pause:
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 				break;
 			case Fim:
+				dados.getRobo().Parar(true);
 				acaba = true;
+				break;
 		}
 	}
 	
 	public void Executar(int n)
 	{
+		System.out.println("A executar");
 		int i = 0;
 		while(i < n && !acaba)
 		{
@@ -41,18 +54,16 @@ public class Movimentos_Aleatorios{
 			switch(comando)
 			{
 				case 0:
-					dados.getRobo().Reta(dados.getDistancia());
+					dados.getRobo().Reta(dados.getRandomDistancia());
 					break;
 				case 1:
-					dados.getRobo().CurvarEsquerda(dados.getRaio(), dados.getAngulo());
+					dados.getRobo().CurvarEsquerda(dados.getRandomRaio(), dados.getRandomAngulo());
 					break;
 				case 2:
-					dados.getRobo().CurvarDireita(dados.getRaio(), dados.getAngulo());
+					dados.getRobo().CurvarDireita(dados.getRandomRaio(), dados.getRandomAngulo());
 					break;
-				//falta gerar as distancias os raios e os angulos aleatorios
 			}
 			i++;
 		}
-			
 	}
 }

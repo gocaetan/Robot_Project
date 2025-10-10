@@ -38,15 +38,16 @@ public class GUIRobot extends JFrame {
     private JCheckBox chkLigar;
     private JButton btnFrente, btnEsquerda, btnDireita, btnTras, btnParar;
     private JSpinner spnNumero;
-    private JRadioButton rdbMovimentos;
+    private JCheckBox rdbMovimentos;
     private JTextArea txtConsola;
 
     private RobotLegoEV3 robot;
     private Dados dados;
-
+    private Movimentos_Aleatorios mov;
     private void myInit() {
         this.robot = new RobotLegoEV3();
         this.dados = new Dados(robot);
+        this.mov = new Movimentos_Aleatorios(dados);
     }
 
     public GUIRobot() {
@@ -143,7 +144,7 @@ public class GUIRobot extends JFrame {
         spnNumero = new JSpinner(new SpinnerNumberModel(1, 1, 16, 1));
         panelOptions.add(spnNumero);
 
-        rdbMovimentos = new JRadioButton("Movimentos Aleatórios");
+        rdbMovimentos = new JCheckBox("Movimentos Aleatórios");
         panelOptions.add(rdbMovimentos);
 
         panelBottom.add(panelOptions, BorderLayout.NORTH);
@@ -161,6 +162,7 @@ public class GUIRobot extends JFrame {
         add(panelBottom, BorderLayout.SOUTH);
 
         myInit();
+        Movimentos_Aleatorios mov = new Movimentos_Aleatorios(dados);
         configurarEventos();
     }
 
@@ -235,6 +237,18 @@ public class GUIRobot extends JFrame {
         btnParar.addActionListener(e -> {
             dados.getRobo().Parar(true);
             txtConsola.append("Movimento: Parar\n");
+        });
+        
+        rdbMovimentos.addItemListener(e -> {
+            if (rdbMovimentos.isSelected()) {
+                mov.setEstado(Movimentos_Aleatorios.Estado.Run);
+                Thread t = new Thread(mov);
+                t.start();
+
+                txtConsola.append("Movimentos aleatórios iniciados.\n");
+            } else {
+                mov.setEstado(Movimentos_Aleatorios.Estado.Pause); // se desmarcar → pausa
+            }
         });
     }
 

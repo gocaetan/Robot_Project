@@ -1,4 +1,4 @@
-
+import java.util.Random;
 public class Dados {
 	private int raio;
 	private int angulo;
@@ -6,6 +6,7 @@ public class Dados {
 	private String robotName;
 	private int RandomMoves;
 	private RobotLegoEV3 robot;
+	private Random random;
 	
 	public Dados(RobotLegoEV3 robot)
 	{
@@ -60,6 +61,21 @@ public class Dados {
 	public int getRandomMoves()
 	{
 		return RandomMoves;
+	}
+	
+	public int getRandomDistancia()
+	{
+		return 10 + random.nextInt(41);	
+	}
+	
+	public int getRandomRaio()
+	{
+		return 10 + random.nextInt(21);
+	}
+	
+	public int getRandomAngulo()
+	{
+		return 20 + random.nextInt(81);
 	}
 	
 	public void setRandomMoves(int RandomMoves)
