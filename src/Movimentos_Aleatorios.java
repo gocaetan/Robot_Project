@@ -15,6 +15,8 @@ public class Movimentos_Aleatorios implements Runnable{
 	{
 		this.dados = dados;
 		this.random = new Random();
+		this.estado = Estado.Pause;
+		this.acaba = false;
 	}
 	
 	public void setEstado(Estado estado)
@@ -24,23 +26,30 @@ public class Movimentos_Aleatorios implements Runnable{
 	
 	public void run()
 	{
-		switch(estado)
+		System.out.println("Thread iniciada. Estado inicial: " + estado);
+		while(!acaba)
 		{
-			case Run:
-				System.out.println("RUN");
-				Executar(dados.getRandomMoves());
-				break;
-			case Pause:
-			try {
-				Thread.sleep(200);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			switch(estado)
+			{
+				case Run:
+					System.out.println("RUN");
+					Executar(dados.getRandomMoves());
+					estado = Estado.Pause;
+					break;
+				case Pause:
+					System.out.println("Pause");
+					try {
+						Thread.sleep(200);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					break;
+				case Fim:
+					System.out.println("Fim");
+					dados.getRobo().Parar(true);
+					acaba = true;
+					break;
 			}
-				break;
-			case Fim:
-				dados.getRobo().Parar(true);
-				acaba = true;
-				break;
 		}
 	}
 	

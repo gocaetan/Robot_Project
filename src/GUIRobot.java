@@ -44,12 +44,14 @@ public class GUIRobot extends JFrame {
     private RobotLegoEV3 robot;
     private Dados dados;
     private Movimentos_Aleatorios mov;
-    private void myInit() {
+    Thread t;
+    void myInit() {
         this.robot = new RobotLegoEV3();
         this.dados = new Dados(robot);
         this.mov = new Movimentos_Aleatorios(dados);
+        this.t = new Thread();
+        t.start();
     }
-
     public GUIRobot() {
         setTitle("GUI Trabalho Prático 1");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -162,12 +164,11 @@ public class GUIRobot extends JFrame {
         add(panelBottom, BorderLayout.SOUTH);
 
         myInit();
-        Movimentos_Aleatorios mov = new Movimentos_Aleatorios(dados);
         configurarEventos();
     }
 
     private void configurarEventos() {
-    	myInit();
+    	//myInit();
     	chkLigar.addActionListener(e -> {
     	    try {
     	        if (chkLigar.isSelected()) {
@@ -191,7 +192,7 @@ public class GUIRobot extends JFrame {
             try {
                 dados.setDistancia(Integer.parseInt(txtDistancia.getText()));
                 dados.getRobo().Reta(dados.getDistancia());
-                txtConsola.append("Movimento: Frente (" + txtDistancia.getText() + ")\n");
+                txtConsola.append("Movimento: Frente (" + dados.getDistancia() + ")\n");
             } catch (NumberFormatException ex) {
                 txtConsola.append("Erro: distância inválida\n");
             }
@@ -212,7 +213,7 @@ public class GUIRobot extends JFrame {
             try {
                 dados.setRaio(Integer.parseInt(txtRaio.getText()));
                 dados.setAngulo(Integer.parseInt(txtAngulo.getText()));
-                dados.getRobo().CurvarDireita(dados.getRaio(), dados.getDistancia());
+                dados.getRobo().CurvarDireita(dados.getRaio(), dados.getAngulo());
                 txtConsola.append("Movimento: Direita (raio=" + txtRaio.getText() + ", ângulo=" + txtAngulo.getText() + ")\n");
             } catch (NumberFormatException ex) {
                 txtConsola.append("Erro: raio/ângulo inválidos\n");
@@ -242,12 +243,10 @@ public class GUIRobot extends JFrame {
         rdbMovimentos.addItemListener(e -> {
             if (rdbMovimentos.isSelected()) {
                 mov.setEstado(Movimentos_Aleatorios.Estado.Run);
-                Thread t = new Thread(mov);
-                t.start();
 
                 txtConsola.append("Movimentos aleatórios iniciados.\n");
             } else {
-                mov.setEstado(Movimentos_Aleatorios.Estado.Pause); // se desmarcar → pausa
+                mov.setEstado(Movimentos_Aleatorios.Estado.Fim);
             }
         });
     }
