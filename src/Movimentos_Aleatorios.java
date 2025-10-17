@@ -57,22 +57,33 @@ public class Movimentos_Aleatorios implements Runnable{
 	{
 		System.out.println("A executar");
 		int i = 0;
+		System.out.println(n);
 		while(i < n && !acaba)
 		{
 			int comando = random.nextInt(3);
 			switch(comando)
 			{
 				case 0:
+					System.out.println("Reta");
 					dados.getRobo().Reta(dados.getRandomDistancia());
 					break;
 				case 1:
+					System.out.println("Curva esquerda");
 					dados.getRobo().CurvarEsquerda(dados.getRandomRaio(), dados.getRandomAngulo());
 					break;
 				case 2:
+					System.out.println("Curva direita");
 					dados.getRobo().CurvarDireita(dados.getRandomRaio(), dados.getRandomAngulo());
 					break;
 			}
+			try {
+				Thread.sleep(1000); // Espera 1 segundo entre movimentos
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			i++;
 		}
+		System.out.println("Execução terminada — a parar o robô.");
+		dados.getRobo().Parar(true);
 	}
 }

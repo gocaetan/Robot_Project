@@ -11,6 +11,7 @@ public class Dados {
 	public Dados(RobotLegoEV3 robot)
 	{
 		this.robot = robot;
+		this.random = new Random();
 	}
 	
 	public RobotLegoEV3 getRobo()

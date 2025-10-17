@@ -49,7 +49,7 @@ public class GUIRobot extends JFrame {
         this.robot = new RobotLegoEV3();
         this.dados = new Dados(robot);
         this.mov = new Movimentos_Aleatorios(dados);
-        this.t = new Thread();
+        this.t = new Thread(mov);
         t.start();
     }
     public GUIRobot() {
@@ -143,7 +143,7 @@ public class GUIRobot extends JFrame {
 
         JPanel panelOptions = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panelOptions.add(new JLabel("Número"));
-        spnNumero = new JSpinner(new SpinnerNumberModel(1, 1, 16, 1));
+        spnNumero = new JSpinner(new SpinnerNumberModel(0, 0, 16, 1));
         panelOptions.add(spnNumero);
 
         rdbMovimentos = new JCheckBox("Movimentos Aleatórios");
@@ -175,6 +175,7 @@ public class GUIRobot extends JFrame {
     	            dados.setRobotName(txtRobot.getText());
     	            dados.getRobo().OpenEV3(dados.getRoboName());
     	        } else {
+    	        	mov.setEstado(Movimentos_Aleatorios.Estado.Fim);
     	            dados.getRobo().CloseEV3();
     	        }
     	    } catch (Exception ex) {
@@ -246,7 +247,7 @@ public class GUIRobot extends JFrame {
 
                 txtConsola.append("Movimentos aleatórios iniciados.\n");
             } else {
-                mov.setEstado(Movimentos_Aleatorios.Estado.Fim);
+                mov.setEstado(Movimentos_Aleatorios.Estado.Pause);
             }
         });
     }
