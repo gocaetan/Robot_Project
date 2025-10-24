@@ -28,6 +28,8 @@ import javax.swing.SwingUtilities;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.util.concurrent.Semaphore;
+
 
 public class GUIRobot extends JFrame {
     /**
@@ -45,10 +47,12 @@ public class GUIRobot extends JFrame {
     private Dados dados;
     private Movimentos_Aleatorios mov;
     Thread t;
+    private Semaphore semaforo;
     void myInit() {
         this.robot = new RobotLegoEV3();
         this.dados = new Dados(robot);
-        this.mov = new Movimentos_Aleatorios(dados);
+        this.semaforo = new Semaphore(1);
+        this.mov = new Movimentos_Aleatorios(dados, semaforo);
         this.t = new Thread(mov);
         t.start();
     }
