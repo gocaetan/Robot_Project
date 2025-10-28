@@ -1,31 +1,24 @@
 import java.util.concurrent.Semaphore;
 
 public class GestorDeAcesso {
-    public static void main(String[] args) {
-        
-        RobotLegoEV3 robo1 = new RobotLegoEV3();
-        RobotLegoEV3 robo2 = new RobotLegoEV3();
+    private final Semaphore semaforo;
+    
+    public GestorDeAcesso(int permissoes) {
+        this.semaforo = new Semaphore(permissoes);
+    }
+    public void pedirAcesso(String nomeThread) {
+        try {
+            System.out.println(nomeThread + " tentando adquirir acesso...");
+            semaforo.acquire();
+            System.out.println(nomeThread + " obteve acesso!");
+        } catch (InterruptedException e) {
+            System.err.println(nomeThread + " foi interrompida ao tentar adquirir acesso.");
+            Thread.currentThread().interrupt();
+        }
+    }
 
-       
-        Dados dados1 = new Dados(robo1);
-        Dados dados2 = new Dados(robo2);
-
-       
-        Semaphore semaforo = new Semaphore(1);
-
-        
-        Movimentos_Aleatorios mov1 = new Movimentos_Aleatorios(dados1, semaforo);
-        Movimentos_Aleatorios mov2 = new Movimentos_Aleatorios(dados2, semaforo);
-
-        
-        Thread t1 = new Thread(mov1, "Robô 1");
-        Thread t2 = new Thread(mov2, "Robô 2");
-
-        t1.start();
-        t2.start();
-
-       
-        mov1.setEstado(Movimentos_Aleatorios.Estado.Run);
-        mov2.setEstado(Movimentos_Aleatorios.Estado.Run);
+    public void libertarAcesso(String nomeThread) {
+        semaforo.release();
+        System.out.println(nomeThread + " libertou o acesso!");
     }
 }

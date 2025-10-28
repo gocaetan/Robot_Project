@@ -46,15 +46,26 @@ public class GUIRobot extends JFrame {
     private RobotLegoEV3 robot;
     private Dados dados;
     private Movimentos_Aleatorios mov;
-    Thread t;
+    Thread tRobot;
+    Thread tmov;
     private Semaphore semaforo;
+    private GestorDeAcesso gestor;
+    private Tampao buffer;
+    private My_Robot myRobot;
     void myInit() {
         this.robot = new RobotLegoEV3();
         this.dados = new Dados(robot);
         this.semaforo = new Semaphore(1);
-        this.mov = new Movimentos_Aleatorios(dados, semaforo);
-        this.t = new Thread(mov);
-        t.start();
+        this.gestor = new GestorDeAcesso(1);
+        this.buffer = new Tampao();
+        
+        this.myRobot = new My_Robot(buffer, dados);
+        this.tRobot = new Thread(myRobot);
+        tRobot.start();
+        
+        this.mov = new Movimentos_Aleatorios(dados, semaforo, gestor, buffer);
+        this.tmov = new Thread(mov);
+        tmov.start();
     }
     public GUIRobot() {
         setTitle("GUI Trabalho Prático 1");
@@ -172,7 +183,6 @@ public class GUIRobot extends JFrame {
     }
 
     private void configurarEventos() {
-    	//myInit();
     	chkLigar.addActionListener(e -> {
     	    try {
     	        if (chkLigar.isSelected()) {
@@ -195,44 +205,55 @@ public class GUIRobot extends JFrame {
     	
         btnFrente.addActionListener(e -> {
             try {
-                dados.setDistancia(Integer.parseInt(txtDistancia.getText()));
-                dados.getRobo().Reta(dados.getDistancia());
-                txtConsola.append("Movimento: Frente (" + dados.getDistancia() + ")\n");
+                int dist = Integer.parseInt(txtDistancia.getText());
+                buffer.put(new Comando(Comando.Tipo.RETA, dist));
+                txtConsola.append("Movimento: Frente (" + dist + ")\n");
             } catch (NumberFormatException ex) {
                 txtConsola.append("Erro: distância inválida\n");
-            }
+            } catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
         });
 
         btnEsquerda.addActionListener(e -> {
             try {
-                dados.setRaio(Integer.parseInt(txtRaio.getText()));
-                dados.setAngulo(Integer.parseInt(txtAngulo.getText()));
-                dados.getRobo().CurvarEsquerda(dados.getRaio(), dados.getAngulo());
+                int raio = Integer.parseInt(txtRaio.getText());
+                int angulo = Integer.parseInt(txtAngulo.getText());
+                buffer.put(new Comando(Comando.Tipo.CE, raio, angulo));
                 txtConsola.append("Movimento: Esquerda (raio=" + txtRaio.getText() + ", ângulo=" + txtAngulo.getText() + ")\n");
             } catch (NumberFormatException ex) {
                 txtConsola.append("Erro: raio/ângulo inválidos\n");
-            }
+            } catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
         });
 
         btnDireita.addActionListener(e -> {
             try {
-                dados.setRaio(Integer.parseInt(txtRaio.getText()));
-                dados.setAngulo(Integer.parseInt(txtAngulo.getText()));
-                dados.getRobo().CurvarDireita(dados.getRaio(), dados.getAngulo());
+            	int raio = Integer.parseInt(txtRaio.getText());
+                int angulo = Integer.parseInt(txtAngulo.getText());
+                buffer.put(new Comando(Comando.Tipo.CD, raio, angulo));
                 txtConsola.append("Movimento: Direita (raio=" + txtRaio.getText() + ", ângulo=" + txtAngulo.getText() + ")\n");
             } catch (NumberFormatException ex) {
                 txtConsola.append("Erro: raio/ângulo inválidos\n");
-            }
+            } catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
         });
 
         btnTras.addActionListener(e -> {
             try {
-                dados.setDistancia(Integer.parseInt(txtDistancia.getText()));
-                dados.getRobo().Reta(-dados.getDistancia());
+            	int dist = Integer.parseInt(txtDistancia.getText());
+                buffer.put(new Comando(Comando.Tipo.RETA, -dist));
                 txtConsola.append("Movimento: Marcha atrás (" + txtDistancia.getText() + ")\n");
             } catch (NumberFormatException ex) {
                 txtConsola.append("Erro: distância inválida\n");
-            }
+            } catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
         });
         
         spnNumero.addChangeListener(e -> {
@@ -241,7 +262,12 @@ public class GUIRobot extends JFrame {
         });
         
         btnParar.addActionListener(e -> {
-            dados.getRobo().Parar(true);
+            try {
+				buffer.put(new Comando(Comando.Tipo.PARAR));
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
             txtConsola.append("Movimento: Parar\n");
         });
         
