@@ -28,7 +28,7 @@ public class My_Robot implements Runnable{
 
     public void CurvarDireita(int raio, int angulo, Dados dados) {
         System.out.println("↱ Curvando à direita (raio=" + raio + ", ângulo=" + angulo + ")");
-        dados.getRobo().CurvarEsquerda(raio, angulo);
+        dados.getRobo().CurvarDireita(raio, angulo);
     }
 
     public void Parar(Dados dados) {

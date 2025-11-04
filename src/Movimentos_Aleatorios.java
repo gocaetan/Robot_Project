@@ -74,25 +74,30 @@ public class Movimentos_Aleatorios implements Runnable {
         System.out.println(Thread.currentThread().getName() + " - A executar " + n + " movimentos aleatórios");
         int i = 0;
         dados.getRobo().Parar(false);
-        while (i < n && !acaba) {
+        while (i < n) {
             int comando = random.nextInt(4); // 0=Reta, 1=Curva Esquerda, 2=Curva Direita 3 = Parar
 
             int tempo = 0;
-            int r = dados.getRandomRaio();
-            int a = dados.getRandomAngulo();
-            int d = dados.getRandomDistancia();
+            int r = 0;
+            int a = 0;
+            int d = 0;
             
             Comando cmd;
             switch (comando) {
                 case 0:
+                	d = dados.getRandomDistancia();
                     cmd = new Comando(Comando.Tipo.RETA, d);
                     tempo = (d / 20) * 1000 + 100;
                     break;
                 case 1:
+                	r = dados.getRandomRaio();
+                    a = dados.getRandomAngulo();
                     cmd = new Comando(Comando.Tipo.CE, r, a);
                     tempo = (int) (((r * Math.PI * a) / (180.0 * 20.0)) * 1000 + 100);
                     break;
                 case 2:
+                	r = dados.getRandomRaio();
+                    a = dados.getRandomAngulo();
                     cmd = new Comando(Comando.Tipo.CD, r, a);
                     tempo = (int) (((r * Math.PI * a) / (180.0 * 20.0)) * 1000 + 100);
                     break;
