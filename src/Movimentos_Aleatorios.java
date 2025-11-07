@@ -8,24 +8,19 @@ public class Movimentos_Aleatorios implements Runnable {
     private Random random;
     private Estado estado;
     private boolean acaba;
-    private Semaphore semaforo;
-    private GestorDeAcesso gestor;
-    private Tampao buffer;
-    
+    private My_Robot myrobo;
     public enum Estado {
         Pause,
         Run,
         Fim
     }
 
-    public Movimentos_Aleatorios(Dados dados, Semaphore semaforo, GestorDeAcesso gestor, Tampao buffer) {
+    public Movimentos_Aleatorios(Dados dados, My_Robot myrobo) {
         this.dados = dados;
         this.random = new Random();
         this.estado = Estado.Pause;
+        this.myrobo = myrobo;
         this.acaba = false;
-        this.semaforo = semaforo;
-        this.gestor = gestor;
-        this.buffer = buffer;
     }
 
     public void setEstado(Estado estado) {
@@ -41,13 +36,12 @@ public class Movimentos_Aleatorios implements Runnable {
 
                 case Run:
                     System.out.println(Thread.currentThread().getName() + " - RUN");
-                    gestor.pedirAcesso(Thread.currentThread().getName());
-                    try {
-                    	Executar(dados.getRandomMoves());
-					} catch (InterruptedException e) {
+				try {
+					Executar(dados.getRandomMoves());
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
 					e.printStackTrace();
-					}
-                    gestor.libertarAcesso(Thread.currentThread().getName());
+				}
                     estado = Estado.Pause;
                     break;
 
@@ -73,16 +67,15 @@ public class Movimentos_Aleatorios implements Runnable {
     public void Executar(int n) throws InterruptedException {
         System.out.println(Thread.currentThread().getName() + " - A executar " + n + " movimentos aleatórios");
         int i = 0;
-        dados.getRobo().Parar(false);
         while (i < n) {
-            int comando = random.nextInt(4); // 0=Reta, 1=Curva Esquerda, 2=Curva Direita 3 = Parar
+            int comando = random.nextInt(3); // 0=Reta, 1=Curva Esquerda, 2=Curva Direita 3 = Parar
 
             int tempo = 0;
             int r = 0;
             int a = 0;
             int d = 0;
             
-            Comando cmd;
+            Comando cmd = new Comando(Comando.Tipo.PARAR);
             switch (comando) {
                 case 0:
                 	d = dados.getRandomDistancia();
@@ -101,19 +94,18 @@ public class Movimentos_Aleatorios implements Runnable {
                     cmd = new Comando(Comando.Tipo.CD, r, a);
                     tempo = (int) (((r * Math.PI * a) / (180.0 * 20.0)) * 1000 + 100);
                     break;
-                default:
-                	cmd = new Comando(Comando.Tipo.PARAR);
-                	tempo = 100;
-                	break;
             }
-            buffer.put(cmd);
-            System.out.println("Comando aleatório colocado no buffer " + cmd.tipo);
+            myrobo.enviarComando(cmd);
+            //System.out.println("Comando aleatório colocado no buffer " + cmd.tipo);
             Thread.sleep(tempo);
-            System.out.println("Tempo de execução " + tempo);
+            cmd = new Comando(Comando.Tipo.PARAR);
+            myrobo.enviarComando(cmd);
+            Thread.sleep(100);
+            //System.out.println("Tempo de execução " + tempo);
             i++;
         }
-
-        System.out.println("Execução terminada — a parar o robô.");
-        buffer.put(new Comando(Comando.Tipo.PARAR));
+        //System.out.println("Execução terminada — a parar o robô.");
+        myrobo.enviarComando(new Comando(Comando.Tipo.PARAR));
+        Thread.sleep(3000);
     }
 }

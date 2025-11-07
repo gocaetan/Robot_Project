@@ -48,22 +48,15 @@ public class GUIRobot extends JFrame {
     private Movimentos_Aleatorios mov;
     Thread tRobot;
     Thread tmov;
-    private Semaphore semaforo;
-    private GestorDeAcesso gestor;
-    private Tampao buffer;
     private My_Robot myRobot;
     void myInit() {
         this.robot = new RobotLegoEV3();
         this.dados = new Dados(robot);
-        this.semaforo = new Semaphore(1);
-        this.gestor = new GestorDeAcesso(1);
-        this.buffer = new Tampao();
-        
-        this.myRobot = new My_Robot(buffer, dados);
+        this.myRobot = new My_Robot(dados);
         this.tRobot = new Thread(myRobot);
         tRobot.start();
         
-        this.mov = new Movimentos_Aleatorios(dados, semaforo, gestor, buffer);
+        this.mov = new Movimentos_Aleatorios(dados, myRobot);
         this.tmov = new Thread(mov);
         tmov.start();
     }
@@ -206,7 +199,7 @@ public class GUIRobot extends JFrame {
         btnFrente.addActionListener(e -> {
             try {
                 int dist = Integer.parseInt(txtDistancia.getText());
-                buffer.put(new Comando(Comando.Tipo.RETA, dist));
+                myRobot.enviarComando(new Comando(Comando.Tipo.RETA, dist));
                 txtConsola.append("Movimento: Frente (" + dist + ")\n");
             } catch (NumberFormatException ex) {
                 txtConsola.append("Erro: distância inválida\n");
@@ -220,7 +213,7 @@ public class GUIRobot extends JFrame {
             try {
                 int raio = Integer.parseInt(txtRaio.getText());
                 int angulo = Integer.parseInt(txtAngulo.getText());
-                buffer.put(new Comando(Comando.Tipo.CE, raio, angulo));
+                myRobot.enviarComando(new Comando(Comando.Tipo.CE, raio, angulo));
                 txtConsola.append("Movimento: Esquerda (raio=" + txtRaio.getText() + ", ângulo=" + txtAngulo.getText() + ")\n");
             } catch (NumberFormatException ex) {
                 txtConsola.append("Erro: raio/ângulo inválidos\n");
@@ -233,7 +226,7 @@ public class GUIRobot extends JFrame {
             try {
             	int raio = Integer.parseInt(txtRaio.getText());
                 int angulo = Integer.parseInt(txtAngulo.getText());
-                buffer.put(new Comando(Comando.Tipo.CD, raio, angulo));
+                myRobot.enviarComando(new Comando(Comando.Tipo.CD, raio, angulo));
                 txtConsola.append("Movimento: Direita (raio=" + txtRaio.getText() + ", ângulo=" + txtAngulo.getText() + ")\n");
             } catch (NumberFormatException ex) {
                 txtConsola.append("Erro: raio/ângulo inválidos\n");
@@ -246,7 +239,7 @@ public class GUIRobot extends JFrame {
         btnTras.addActionListener(e -> {
             try {
             	int dist = Integer.parseInt(txtDistancia.getText());
-                buffer.put(new Comando(Comando.Tipo.RETA, -dist));
+                myRobot.enviarComando(new Comando(Comando.Tipo.RETA, -dist));
                 txtConsola.append("Movimento: Marcha atrás (" + txtDistancia.getText() + ")\n");
             } catch (NumberFormatException ex) {
                 txtConsola.append("Erro: distância inválida\n");
@@ -263,7 +256,7 @@ public class GUIRobot extends JFrame {
         
         btnParar.addActionListener(e -> {
             try {
-				buffer.put(new Comando(Comando.Tipo.PARAR));
+				myRobot.enviarComando(new Comando(Comando.Tipo.PARAR));
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();

@@ -4,10 +4,12 @@ public class My_Robot implements Runnable{
 	private Tampao buffer;
 	private boolean running;
 	private Dados dados;
+	private GestorDeAcesso gestor;
 	
-	public My_Robot(Tampao buffer, Dados dados)
+	public My_Robot(Dados dados)
 	{
-		this.buffer = buffer;
+		this.buffer = new Tampao();
+		this.gestor = new GestorDeAcesso(1);
 		this.running = true;
 		this.dados = dados;
 	}
@@ -16,6 +18,13 @@ public class My_Robot implements Runnable{
 	{
 		running = false;
 	}
+	
+	public void enviarComando(Comando cmd) throws InterruptedException {
+	    gestor.pedirAcesso(Thread.currentThread().getName());
+	    buffer.put(cmd);
+	    gestor.libertarAcesso(Thread.currentThread().getName());
+	}
+	
     public void Reta(int distancia, Dados dados) {
         System.out.println("Movendo em linha reta por " + distancia + " cm");
         dados.getRobo().Reta(distancia);

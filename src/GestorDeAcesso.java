@@ -8,11 +8,11 @@ public class GestorDeAcesso {
     }
     public void pedirAcesso(String nomeThread) {
         try {
-            System.out.println(nomeThread + " tentando adquirir acesso...");
+            //System.out.println(nomeThread + " tentando adquirir acesso...");
             semaforo.acquire();
-            System.out.println(nomeThread + " obteve acesso!");
+            //System.out.println(nomeThread + " obteve acesso!");
         } catch (InterruptedException e) {
-            System.err.println(nomeThread + " foi interrompida ao tentar adquirir acesso.");
+            //System.err.println(nomeThread + " foi interrompida ao tentar adquirir acesso.");
             Thread.currentThread().interrupt();
         }
     }
