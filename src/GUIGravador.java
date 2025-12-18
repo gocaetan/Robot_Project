@@ -1,4 +1,3 @@
-//package fso;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -8,16 +7,16 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.ActionListener; 
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
@@ -26,64 +25,54 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 
 import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
-
-public class GUIRobot extends JFrame {
+public class GUIGravador extends JFrame {
+    
 	private static final long serialVersionUID = 1L;
-	private JTextField txtRaio, txtAngulo, txtDistancia, txtRobot;
+	private JTextField txtRaio, txtAngulo, txtDistancia, txtRobot, txtFicheiro;
     private JCheckBox chkLigar;
-    private JButton btnFrente, btnEsquerda, btnDireita, btnTras, btnParar;
+    private JButton btnFrente, btnEsquerda, btnDireita, btnTras, btnParar, btnGravar, 
+                    btnReproduzir, btnLimpar, btnImprimir, btnSelecionarFicheiro;
     private JSpinner spnNumero;
     private JCheckBox rdbMovimentos;
     private JTextArea txtConsola;
 
+   
     private RobotLegoEV3 robot;
     private Dados dados;
     private Movimentos_Aleatorios mov;
     Thread tRobot;
     Thread tmov;
-    Thread tEvitar;
+    private Gravador gravador;
     private My_Robot myRobot;
-    EvitarObstaculo evitar;
-    private JButton btnDebugSensor;
-    private JCheckBox chkDebugSensor;
-    private JCheckBox chkEvitarObstaculos;
     void myInit() {
         this.robot = new RobotLegoEV3();
         this.dados = new Dados(robot);
         this.myRobot = new My_Robot(dados);
         this.tRobot = new Thread(myRobot);
         tRobot.start();
-        
-        this.mov = new Movimentos_Aleatorios(dados, myRobot);
-        this.tmov = new Thread(mov);
-        tmov.start();
-        
-        this.evitar = new EvitarObstaculo(dados, myRobot);
-        this.tEvitar = new Thread(evitar);
-        tEvitar.start();
+        this.gravador = new Gravador(myRobot);
+        myRobot.setGravador(gravador);
     }
-    public GUIRobot() {
-        setTitle("GUI Trabalho Prático 1");
+    
+    public GUIGravador() {
+        setTitle("GUI Gravador");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
+        setSize(800, 650); 
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // Painel de cima (inputs)
+        
         JPanel panelTop = new JPanel(new GridLayout(2, 1, 5, 5));
-        panelTop.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panelTop.setBorder(BorderFactory.createEmptyBorder(10, 10, 5, 10));
 
-        // Linha 1: inputs
+        
         JPanel line1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         line1.add(new JLabel("Raio"));
-        txtRaio = new JTextField();
-        txtRaio.setPreferredSize(new Dimension(80, 25));
+        txtRaio = new JTextField("20");
+        txtRaio.setPreferredSize(new Dimension(50, 25));
         line1.add(txtRaio);
 
         line1.add(new JLabel("Ângulo"));
@@ -109,92 +98,129 @@ public class GUIRobot extends JFrame {
         line2.add(chkLigar);
 
         panelTop.add(line2);
-
         add(panelTop, BorderLayout.NORTH);
+        
+        // Painel Meio (Contém Movimento e Gravador - CENTER do JFrame) 
+        JPanel panelMiddle = new JPanel(new GridLayout(2, 1, 10, 10)); // GridLayout para empilhar Movimento e Gravador
+        panelMiddle.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
 
-        // Painel central
-        JPanel panelCenter = new JPanel(new GridBagLayout());
+        
+        JPanel panelMovimento = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
+        Dimension buttonSize = new Dimension(100, 40);
 
-        Dimension buttonSize = new Dimension(120, 50);
-
+        // Botões de Movimento
         btnFrente = new JButton("FRENTE");
-        btnFrente.setBackground(Color.GREEN);
+        btnFrente.setBackground(Color.GREEN.brighter());
         btnFrente.setPreferredSize(buttonSize);
-        gbc.gridx = 1; gbc.gridy = 0;
-        panelCenter.add(btnFrente, gbc);
+        gbc.gridx = 2; gbc.gridy = 0;
+        panelMovimento.add(btnFrente, gbc);
 
         btnEsquerda = new JButton("ESQUERDA");
-        btnEsquerda.setBackground(Color.PINK);
+        btnEsquerda.setBackground(Color.MAGENTA.darker());
         btnEsquerda.setPreferredSize(buttonSize);
-        gbc.gridx = 0; gbc.gridy = 1;
-        panelCenter.add(btnEsquerda, gbc);
+        gbc.gridx = 1; gbc.gridy = 1;
+        panelMovimento.add(btnEsquerda, gbc);
 
         btnParar = new JButton("PARAR");
         btnParar.setBackground(Color.RED);
         btnParar.setForeground(Color.WHITE);
         btnParar.setPreferredSize(buttonSize);
-        gbc.gridx = 1; gbc.gridy = 1;
-        panelCenter.add(btnParar, gbc);
+        gbc.gridx = 2; gbc.gridy = 1;
+        panelMovimento.add(btnParar, gbc);
 
         btnDireita = new JButton("DIREITA");
-        btnDireita.setBackground(Color.BLUE);
+        btnDireita.setBackground(Color.BLUE.darker());
         btnDireita.setForeground(Color.WHITE);
         btnDireita.setPreferredSize(buttonSize);
-        gbc.gridx = 2; gbc.gridy = 1;
-        panelCenter.add(btnDireita, gbc);
+        gbc.gridx = 3; gbc.gridy = 1;
+        panelMovimento.add(btnDireita, gbc);
 
         btnTras = new JButton("TRÁS");
-        btnTras.setBackground(new Color(255, 100, 100));
+        btnTras.setBackground(new Color(255, 69, 147));
         btnTras.setPreferredSize(buttonSize);
-        gbc.gridx = 1; gbc.gridy = 2;
-        panelCenter.add(btnTras, gbc);
-
-        add(panelCenter, BorderLayout.CENTER);
-
-        // Painel de baixo 
-        JPanel panelBottom = new JPanel(new BorderLayout(10, 10));
-        panelBottom.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        JPanel panelOptions = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panelOptions.add(new JLabel("Número"));
-        spnNumero = new JSpinner(new SpinnerNumberModel(0, 0, 16, 1));
-        panelOptions.add(spnNumero);
-
-        rdbMovimentos = new JCheckBox("Movimentos Aleatórios");
-        panelOptions.add(rdbMovimentos);
-
-        chkEvitarObstaculos = new JCheckBox("Evitar Obstáculos");
-        panelOptions.add(chkEvitarObstaculos);
-
-        chkDebugSensor = new JCheckBox("Debug Sensor");
-        panelOptions.add(chkDebugSensor);
-
-        btnDebugSensor = new JButton("Simular Obstáculo");
-        btnDebugSensor.setEnabled(false);
-        panelOptions.add(btnDebugSensor);
+        gbc.gridx = 2; gbc.gridy = 2;
+        panelMovimento.add(btnTras, gbc);
         
-        panelBottom.add(panelOptions, BorderLayout.NORTH);
+        panelMiddle.add(panelMovimento); // Adiciona o painel de movimento (NORTH do panelMiddle)
 
-        JPanel panelConsola = new JPanel(new BorderLayout());
-        panelConsola.add(new JLabel("Consola"), BorderLayout.NORTH);
+        // 2. Painel Gravador Ficheiro (CENTER do panelMiddle)
+        JPanel panelGravador = new JPanel(new BorderLayout(5, 5));
+        panelGravador.setBorder(BorderFactory.createTitledBorder("Gravador"));
+
+        // Painel para o campo do ficheiro
+        JPanel panelFicheiro = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        panelFicheiro.add(new JLabel("Ficheiro"));
+        
+        
+        txtFicheiro = new JTextField(60); 
+        panelFicheiro.add(txtFicheiro);
+        
+        // Botão de reticências (Selecionar Ficheiro)
+        btnSelecionarFicheiro = new JButton("...");
+        btnSelecionarFicheiro.setPreferredSize(new Dimension(30, 25));
+        panelFicheiro.add(btnSelecionarFicheiro);
+        
+        panelGravador.add(panelFicheiro, BorderLayout.NORTH);
+
+        // Painel para os botões Gravar/Reproduzir
+        JPanel panelBotoesGravador = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        
+        
+        btnGravar = new JButton("Gravar"); 
+        btnReproduzir = new JButton("Reproduzir");
+        
+        panelBotoesGravador.add(btnGravar);
+        panelBotoesGravador.add(btnReproduzir);
+        
+        panelGravador.add(panelBotoesGravador, BorderLayout.CENTER);
+        
+        panelMiddle.add(panelGravador); // Adiciona o painel do gravador (SOUTH do panelMiddle)
+        
+        add(panelMiddle, BorderLayout.CENTER); // Adiciona o painel central ao JFrame
+        
+        // Painel Consola 
+        JPanel panelConsolaGlobal = new JPanel(new BorderLayout(10, 10));
+        panelConsolaGlobal.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Margem à volta
+        
+        // Área de texto
+        JPanel panelConsolaArea = new JPanel(new BorderLayout());
+        panelConsolaArea.add(new JLabel("Consola"), BorderLayout.NORTH);
 
         txtConsola = new JTextArea(8, 40);
         txtConsola.setEditable(false);
         JScrollPane scroll = new JScrollPane(txtConsola);
-        panelConsola.add(scroll, BorderLayout.CENTER);
-
-        panelBottom.add(panelConsola, BorderLayout.CENTER);
-
-        add(panelBottom, BorderLayout.SOUTH);
+        panelConsolaArea.add(scroll, BorderLayout.CENTER);
+        
+        panelConsolaGlobal.add(panelConsolaArea, BorderLayout.CENTER);
+        
+        // Botões Limpar/Imprimir e Opções
+        JPanel panelFooterConsola = new JPanel(new BorderLayout());
+        
+        
+        
+        JPanel panelBotoesFim = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        btnLimpar = new JButton("Limpar");
+        btnImprimir = new JButton("Imprimir");
+        
+        panelBotoesFim.add(btnLimpar);
+        panelBotoesFim.add(btnImprimir);
+        
+        panelFooterConsola.add(panelBotoesFim, BorderLayout.CENTER);
+        
+        panelConsolaGlobal.add(panelFooterConsola, BorderLayout.SOUTH);
+        
+        add(panelConsolaGlobal, BorderLayout.SOUTH); // Adiciona a Consola ao SOUTH do JFrame
 
         myInit();
         configurarEventos();
     }
 
-    public void setGravador(Gravador g) {
-        this.myRobot.setGravador(g);
+
+    public Gravador getGravador()
+    {
+    	return this.gravador;
     }
     
     private void configurarEventos() {
@@ -203,24 +229,17 @@ public class GUIRobot extends JFrame {
     	        if (chkLigar.isSelected()) {
     	            dados.setRobotName(txtRobot.getText());
     	            dados.getRobo().OpenEV3(dados.getRoboName());
-    	            evitar.setEstado(EvitarObstaculo.Estado.Run);
-    	            chkEvitarObstaculos.setSelected(true);
+    	            dados.getRobo().SensorToque(1);
     	        } else {
-    	        	evitar.setEstado(EvitarObstaculo.Estado.Pause);
-    	        	chkEvitarObstaculos.setSelected(false);
     	        	mov.setEstado(Movimentos_Aleatorios.Estado.Fim);
     	            dados.getRobo().CloseEV3();
     	        }
     	    } catch (Exception ex) {
-    	        JOptionPane.showMessageDialog(
-    	            null,
-    	            "Erro ao ligar/desligar o robô: " + ex.getMessage(),
-    	            "Erro",
-    	            JOptionPane.ERROR_MESSAGE
-    	        );
+    	        JOptionPane.showMessageDialog(null, "Erro ao ligar/desligar o robô: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
     	        chkLigar.setSelected(false);
     	    }
     	});
+    	
         btnFrente.addActionListener(e -> {
             try {
                 int dist = Integer.parseInt(txtDistancia.getText());
@@ -292,58 +311,51 @@ public class GUIRobot extends JFrame {
             txtConsola.append("Movimento: Parar\n");
         });
         
-        spnNumero.addChangeListener(e -> {
-        	int valor = (int) spnNumero.getValue();
-        	dados.setRandomMoves(valor);
-        });
-        rdbMovimentos.addItemListener(e -> {
-            if (rdbMovimentos.isSelected()) {
-                mov.setEstado(Movimentos_Aleatorios.Estado.Run);
+        btnGravar.addActionListener(e -> {
 
-                txtConsola.append("Movimentos aleatórios iniciados.\n");
+            if (!gravador.estaAtivo()) {
+                gravador.iniciar();
+                txtConsola.append("🎙 Gravação iniciada\n");
             } else {
-                mov.setEstado(Movimentos_Aleatorios.Estado.Pause);
+                gravador.parar(txtFicheiro.getText());
+                txtConsola.append("💾 Gravação terminada\n");
             }
         });
-        chkEvitarObstaculos.addActionListener(e -> {
-            boolean ativo = chkEvitarObstaculos.isSelected();
-
-            evitar.setAtivo(ativo);
-            evitar.setEstado(ativo 
-                ? EvitarObstaculo.Estado.Run 
-                : EvitarObstaculo.Estado.Pause
-            );
-
-            txtConsola.append(
-                ativo 
-                ? "Tarefa Evitar Obstáculos ATIVADA\n"
-                : "Tarefa Evitar Obstáculos DESATIVADA\n"
-            );
+        
+        btnReproduzir.addActionListener(e -> {
+            gravador.reproduzirComandos(txtFicheiro.getText());
+            txtConsola.append("▶ Reproduzindo comandos\n");
         });
-        chkDebugSensor.addActionListener(e -> {
-            boolean ativo = chkDebugSensor.isSelected();
-            evitar.ativarDebugSensor(ativo);
-            btnDebugSensor.setEnabled(ativo);
-
-            txtConsola.append(
-                ativo ? "Debug do sensor ATIVADO\n" : "Debug do sensor DESATIVADO\n"
-            );
+        
+        btnLimpar.addActionListener(e -> {
+            txtConsola.setText("");
+            txtConsola.append("Consola limpa.\n");
         });
-        btnDebugSensor.addActionListener(e -> {
-            evitar.simularToque();
-            txtConsola.append(">>> Obstáculo SIMULADO (debug)\n");
+        
+        btnImprimir.addActionListener(e -> {
+            txtConsola.append("A imprimir consola...\n");
+        });
+        
+        btnSelecionarFicheiro.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
+            int resultado = chooser.showOpenDialog(this);
+
+            if (resultado == JFileChooser.APPROVE_OPTION) {
+                String caminho = chooser.getSelectedFile().getAbsolutePath();
+                txtFicheiro.setText(caminho);
+                txtConsola.append("Ficheiro selecionado: " + caminho + "\n");
+            } else {
+                txtConsola.append("Seleção de ficheiro cancelada.\n");
+            }
         });
     }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            GUIRobot frame = new GUIRobot();
+            GUIGravador frame = new GUIGravador();
             frame.setVisible(true);
         });
     }
 }
-
-
-
 
 

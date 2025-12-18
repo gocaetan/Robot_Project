@@ -1,7 +1,6 @@
-
 import java.util.Random;
 import java.util.concurrent.Semaphore;
-
+import java.util.ArrayList;
 public class Movimentos_Aleatorios implements Runnable {
 
     private Dados dados;
@@ -9,6 +8,8 @@ public class Movimentos_Aleatorios implements Runnable {
     private Estado estado;
     private boolean acaba;
     private My_Robot myrobo;
+    private ArrayList<Comando> cmdList;
+    private GestorDeAcesso gestor;
     public enum Estado {
         Pause,
         Run,
@@ -21,12 +22,13 @@ public class Movimentos_Aleatorios implements Runnable {
         this.estado = Estado.Pause;
         this.myrobo = myrobo;
         this.acaba = false;
+        this.cmdList = new ArrayList<Comando>();
+        this.gestor = new GestorDeAcesso(1);
     }
 
     public void setEstado(Estado estado) {
         this.estado = estado;
     }
-
     @Override
     public void run() {
         System.out.println("Thread iniciada: " + Thread.currentThread().getName() + " | Estado inicial: " + estado);
@@ -35,16 +37,24 @@ public class Movimentos_Aleatorios implements Runnable {
             switch (estado) {
 
                 case Run:
-                    System.out.println(Thread.currentThread().getName() + " - RUN");
-				try {
-					Executar(dados.getRandomMoves());
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+					try {
+						Executar(dados.getRandomMoves());
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					while(!myrobo.bufferMovAleatorio.isVazio())
+					{
+						try {
+							Thread.sleep(50);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
                     estado = Estado.Pause;
                     break;
-
                 case Pause:
                     System.out.println(Thread.currentThread().getName() + " - PAUSE");
                     try {
@@ -67,6 +77,7 @@ public class Movimentos_Aleatorios implements Runnable {
     public void Executar(int n) throws InterruptedException {
         System.out.println(Thread.currentThread().getName() + " - A executar " + n + " movimentos aleatórios");
         int i = 0;
+        cmdList.clear();
         while (i < n) {
             int comando = random.nextInt(3); // 0=Reta, 1=Curva Esquerda, 2=Curva Direita 3 = Parar
 
@@ -95,17 +106,14 @@ public class Movimentos_Aleatorios implements Runnable {
                     tempo = (int) (((r * Math.PI * a) / (180.0 * 20.0)) * 1000 + 100);
                     break;
             }
-            myrobo.enviarComando(cmd);
-            //System.out.println("Comando aleatório colocado no buffer " + cmd.tipo);
-            Thread.sleep(tempo);
-            cmd = new Comando(Comando.Tipo.PARAR);
-            myrobo.enviarComando(cmd);
-            Thread.sleep(100);
-            //System.out.println("Tempo de execução " + tempo);
+            cmdList.add(cmd);
+            //System.out.println("Comando adicionado à lista");
+            cmdList.add(new Comando(Comando.Tipo.ESPERAR, tempo));
+            cmdList.add(new Comando(Comando.Tipo.PARAR));
+            cmdList.add(new Comando(Comando.Tipo.ESPERAR, 100));
             i++;
         }
-        //System.out.println("Execução terminada — a parar o robô.");
-        myrobo.enviarComando(new Comando(Comando.Tipo.PARAR));
-        Thread.sleep(3000);
+        //cmdList.add(new Comando(Comando.Tipo.ESPERAR, 3000));
+        myrobo.ExecutarMovimentosAleatorios(cmdList);
     }
 }

@@ -8,7 +8,7 @@ public class Tampao {
     private int idxPut = 0;
     private int idxGet = 0;
     private int numElementos = 0; // Para ser usado em isCheio() e isVazio()
-
+    
     // Semáforos 
     
     // SM: Semáforo Mutex (Inicializado a 1). Protege o acesso ao buffer e aos contadores.
@@ -33,7 +33,7 @@ public class Tampao {
         return numElementos == CAPACIDADE;
     }
 
-    private boolean isVazio() {
+    public boolean isVazio() {
         return numElementos == 0;
     }
     

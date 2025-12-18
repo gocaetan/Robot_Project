@@ -3,11 +3,14 @@ public class Comando {
 		RETA,
 		PARAR,
 		CE,
-		CD
+		CD,
+		ESPERAR,
+		LER_SENSOR
 	}
 	public Tipo tipo;
 	public int valor1;
 	public int valor2;
+	public Integer resultado = null; // saída (sensor lido)
 	
 	public Comando(Tipo tipo, int valor1, int valor2)
 	{
